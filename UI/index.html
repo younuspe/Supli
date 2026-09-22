@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Supli</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#111;color:#eee;font:14px system-ui,sans-serif;height:100vh}
+.app{display:grid;grid-template-columns:230px 1fr 310px;height:100vh}.panel{border:1px solid #333;background:#171717}.side{padding:14px}.editor{display:flex;flex-direction:column}.chat{display:flex;flex-direction:column;padding:14px}.title{font-weight:700;margin-bottom:12px}.files button,.palette button{display:block;width:100%;margin:5px 0;padding:8px;text-align:left;background:#222;color:#ddd;border:1px solid #444;border-radius:6px}.bar{padding:10px;border-bottom:1px solid #333}.code{flex:1;padding:16px;background:#101010;font-family:monospace;white-space:pre-wrap}.designer{height:330px;border-top:1px solid #333;display:grid;grid-template-columns:150px 1fr 180px}.palette,.props{padding:10px}.canvas{margin:10px;background:#202020;position:relative;overflow:auto}.item{position:absolute;border:1px dashed #777;padding:8px;min-width:70px;min-height:30px}.chatlog{flex:1;overflow:auto}.input{display:flex;gap:6px}.input input{flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:6px}.input button{padding:10px}.prop{margin:8px 0}.prop input{width:100%;padding:6px;background:#222;color:#fff;border:1px solid #444}
+</style></head><body><div class="app">
+<aside class="panel side"><div class="title">Project Explorer</div><div class="files">Workspace: ~/Supli</div></aside>
+<main class="panel editor"><div class="bar"><b>Code Editor</b></div><div class="code" id="code">No file selected.</div>
+<section class="designer"><div class="palette"><b>UI Designer</b><button data-t="container">Container</button><button data-t="text">Text</button><button data-t="button">Button</button><button data-t="image">Image</button></div><div class="canvas" id="canvas"></div><div class="props"><b>Properties</b><div class="prop">Component<div id="ptype">None selected</div></div><div class="prop">Text<input id="ptext" disabled></div><div class="prop">Width<input id="pwidth" type="number" disabled></div><div class="prop">Height<input id="pheight" type="number" disabled></div></div></section></main>
+<aside class="panel chat"><div class="title">Supli Chat</div><div class="chatlog" id="log"></div><div class="input"><input id="msg" placeholder="Ask Supli..."><button id="send">Send</button></div></aside>
+</div>
+<script>
+let selected=null;
+const canvas=document.getElementById('canvas'),type=document.getElementById('ptype'),text=document.getElementById('ptext'),w=document.getElementById('pwidth'),h=document.getElementById('pheight');
+function select(el){selected=el;type.textContent=el.dataset.type;text.disabled=false;w.disabled=false;h.disabled=false;text.value=el.textContent;w.value=el.offsetWidth;h.value=el.offsetHeight}
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{let e=document.createElement('div');e.className='item';e.dataset.type=b.dataset.t;e.textContent=b.dataset.t==='text'?'Text':b.dataset.t;e.style.left='20px';e.style.top='20px';canvas.appendChild(e);select(e)});
+text.oninput=()=>{if(selected)selected.textContent=text.value};w.oninput=()=>{if(selected)selected.style.width=w.value+'px'};h.oninput=()=>{if(selected)selected.style.height=h.value+'px'};
+document.getElementById('send').onclick=async()=>{let m=document.getElementById('msg'),log=document.getElementById('log');log.innerHTML+='<p><b>You:</b> '+m.value+'</p>';let r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:m.value})});let d=await r.json();log.innerHTML+='<p><b>Supli:</b> '+(d.response||d.error)+'</p>';m.value=''};
+</script></body></html>
